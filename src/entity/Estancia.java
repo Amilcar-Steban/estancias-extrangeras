@@ -1,20 +1,18 @@
 package entity;
 
-import java.sql.Date;
-
 public class Estancia {
 
     private int idEstancia;
     private int idCliente;
     private int idCasa;
     private String nombreHuesped;
-    private java.sql.Date fechaDesde;
-    private java.sql.Date fechaHasta;
+    private String fechaDesde;
+    private String fechaHasta;
 
     public Estancia() {
     }
 
-    public Estancia(int idEstancia, int idCliente, int idCasa, String nombreHuesped, Date fechaDesde, Date fechaHasta) {
+    public Estancia(int idEstancia, int idCliente, int idCasa, String nombreHuesped, String fechaDesde, String fechaHasta) {
         this.idEstancia = idEstancia;
         this.idCliente = idCliente;
         this.idCasa = idCasa;
@@ -23,7 +21,7 @@ public class Estancia {
         this.fechaHasta = fechaHasta;
     }
 
-    public Estancia(int idCliente, int idCasa, String nombreHuesped, Date fechaDesde, Date fechaHasta) {
+    public Estancia(int idCliente, int idCasa, String nombreHuesped, String fechaDesde, String fechaHasta) {
         this.idCliente = idCliente;
         this.idCasa = idCasa;
         this.nombreHuesped = nombreHuesped;
@@ -63,19 +61,19 @@ public class Estancia {
         this.nombreHuesped = nombreHuesped;
     }
 
-    public java.sql.Date getFechaDesde() {
+    public String getFechaDesde() {
         return fechaDesde;
     }
 
-    public void setFechaDesde(java.sql.Date fechaDesde) {
+    public void setFechaDesde(String fechaDesde) {
         this.fechaDesde = fechaDesde;
     }
 
-    public java.sql.Date getFechaHasta() {
+    public String getFechaHasta() {
         return fechaHasta;
     }
 
-    public void setFechaHasta(java.sql.Date fechaHasta) {
+    public void setFechaHasta(String fechaHasta) {
         this.fechaHasta = fechaHasta;
     }
 
