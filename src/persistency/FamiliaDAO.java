@@ -1,86 +1,107 @@
 package persistency;
 
 import entity.Familia;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class FamiliaDAO  extends DAO{
+public class FamiliaDAO extends DAO {
 
     public FamiliaDAO() {
     }
-    //agregar, eliminar, listar, buscar, modificar
-    public void agregarFamilia(Familia familia) throws Exception {
-        try {
-            String sql = "INSERT INTO familia (id_familia, nombre, edadMinima, edadMaxima, numHijos, email, idCasaFamilia) VALUES ("
-                    + familia.getIdFamilia() + ", "
-                    + familia.getNombre() + ", "
-                    + familia.getEdadMinima() + ", "
-                    + familia.getEdadMaxima() + ", "
-                    + familia.getNumHijos() + ", "
-                    + familia.getEmail() + ", "
-                    + familia.getIdCasaFamilia() + ")";
-            crud(sql);
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
-        }
+
+    public void agregarFamilia(Familia familia) throws SQLException, ClassNotFoundException {
+        String sql = "INSERT INTO familia (id_familia, nombre, edad_Minima, edad_Maxima, num_Hijos, email, id_Casa_Familia) "
+                   + "VALUES (?, ?, ?, ?, ?, ?, ?)";
+        
+        crud(sql, 
+            familia.getIdFamilia(),
+            familia.getNombre(),
+            familia.getEdadMinima(),
+            familia.getEdadMaxima(),
+            familia.getNumHijos(),
+            familia.getEmail(),
+            familia.getIdCasaFamilia()
+        );
     }
 
-    public void listarFamilias() throws Exception {
+    // Método para listar familias con filtros
+    public List<Familia> listarFamiliasHijosYEdad(int edadMax, int minHijos) throws SQLException, ClassNotFoundException {
+        String sql = "SELECT * FROM familia WHERE numHijos >= ? AND edadMaxima < ?";
+        
+        consultarDataBase(sql, minHijos, edadMax);
+        List<Familia> familias = new ArrayList<>();
+        
         try {
-            String sql = "SELECT * FROM familias";
-            consultarDataBase(sql);
-            List<Familia> familias = new ArrayList<>();
             while (resultSet.next()) {
                 Familia familia = new Familia();
                 familia.setIdFamilia(resultSet.getInt("id_familia"));
                 familia.setNombre(resultSet.getString("nombre"));
-                familia.setEdadMinima(resultSet.getInt("edadMinima"));
-                familia.setEdadMaxima(resultSet.getInt("edadMaxima"));
-                familia.setNumHijos(resultSet.getInt("numHijos"));
+                familia.setEdadMinima(resultSet.getInt("edad_Minima"));
+                familia.setEdadMaxima(resultSet.getInt("edad_Maxima"));
+                familia.setNumHijos(resultSet.getInt("num_Hijos"));
                 familia.setEmail(resultSet.getString("email"));
-                familia.setIdCasaFamilia(resultSet.getInt("idCasaFamilia"));
+                familia.setIdCasaFamilia(resultSet.getInt("id_Casa_Familia"));
                 familias.add(familia);
             }
+            return familias;
+        } finally {
             closeDataBase();
-            for (Familia fam : familias) {
-                System.out.println(fam.toString());
-                System.out.println("--------------------");
-            }
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
         }
     }
 
-    public void eliminarFamilia(int id) throws Exception {
+    // Método para listar todas las familias
+    public List<Familia> listarFamilias() throws SQLException, ClassNotFoundException {
+        String sql = "SELECT * FROM familia";
+        
+        consultarDataBase(sql);
+        List<Familia> familias = new ArrayList<>();
+        
         try {
-            String sql = "DELETE FROM familia WHERE id_familia = " + id;
-            crud(sql);
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
-        }
-    }
-
-    public void buscarFamilia(int id) throws Exception {
-        try {
-            String sql = "SELECT * FROM familia WHERE id_familia = " + id;
-            consultarDataBase(sql);
-            Familia familia = new Familia();
             while (resultSet.next()) {
+                Familia familia = new Familia();
                 familia.setIdFamilia(resultSet.getInt("id_familia"));
                 familia.setNombre(resultSet.getString("nombre"));
-                familia.setEdadMinima(resultSet.getInt("edadMinima"));
-                familia.setEdadMaxima(resultSet.getInt("edadMaxima"));
-                familia.setNumHijos(resultSet.getInt("numHijos"));
+                familia.setEdadMinima(resultSet.getInt("edad_Minima"));
+                familia.setEdadMaxima(resultSet.getInt("edad_Maxima"));
+                familia.setNumHijos(resultSet.getInt("num_Hijos"));
                 familia.setEmail(resultSet.getString("email"));
-                familia.setIdCasaFamilia(resultSet.getInt("idCasaFamilia"));
+                familia.setIdCasaFamilia(resultSet.getInt("id_Casa_Familia"));
+                familias.add(familia);
             }
+            return familias;
+        } finally {
             closeDataBase();
-            System.out.println(familia.toString());
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
         }
     }
 
+    // Método para eliminar una familia
+    public void eliminarFamilia(int id) throws SQLException, ClassNotFoundException {
+        String sql = "DELETE FROM familia WHERE id_familia = ?";
+        crud(sql, id);
+    }
 
-
+    // Método para buscar una familia por ID
+    public Familia buscarFamilia(int id) throws SQLException, ClassNotFoundException {
+        String sql = "SELECT * FROM familia WHERE id_familia = ?";
+        
+        consultarDataBase(sql, id);
+        Familia familia = null;
+        
+        try {
+            if (resultSet.next()) {
+                familia = new Familia();
+                familia.setIdFamilia(resultSet.getInt("id_familia"));
+                familia.setNombre(resultSet.getString("nombre"));
+                familia.setEdadMinima(resultSet.getInt("edad_Minima"));
+                familia.setEdadMaxima(resultSet.getInt("edad_Maxima"));
+                familia.setNumHijos(resultSet.getInt("num_Hijos"));
+                familia.setEmail(resultSet.getString("email"));
+                familia.setIdCasaFamilia(resultSet.getInt("id_Casa_Familia"));
+            }
+            return familia;
+        } finally {
+            closeDataBase();
+        }
+    }
 }

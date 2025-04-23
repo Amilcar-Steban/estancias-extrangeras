@@ -1,6 +1,7 @@
 package persistency;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -9,6 +10,7 @@ public abstract class DAO {
     protected Connection conexion = null;
     protected ResultSet resultSet = null;
     protected Statement statement = null;
+    protected PreparedStatement preparedStatement = null;
 
     private final String HOST = "127.0.0.1";
     private final String PORT = "3306";
@@ -29,7 +31,7 @@ public abstract class DAO {
         }
     }
 
-    protected void closeDataBase() throws SQLException, ClassNotFoundException {
+    protected void closeDataBase() throws SQLException {
         try {
             if (resultSet != null) {
                 resultSet.close();
@@ -37,35 +39,48 @@ public abstract class DAO {
             if (statement != null) {
                 statement.close();
             }
+            if (preparedStatement != null) { // Cierra el PreparedStatement si existe
+                preparedStatement.close();
+            }
             if (conexion != null) {
                 conexion.close();
             }
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
+        } catch (SQLException e) {
+            System.err.println("Error al cerrar conexiones: " + e.getMessage());
+            throw e;
         }
     }
 
-    protected void crud(String sql) throws Exception {
+    protected void crud(String sql, Object... params) throws SQLException, ClassNotFoundException {
         try {
             connectDataBase();
-            statement = conexion.createStatement();
-            statement.executeUpdate(sql);
-        } catch (SQLException | ClassNotFoundException ex) {
-
-            System.out.println(ex.getMessage());
-            throw ex;
+            preparedStatement = conexion.prepareStatement(sql);
+            
+            // Asigna los parámetros dinámicamente
+            for (int i = 0; i < params.length; i++) {
+                preparedStatement.setObject(i + 1, params[i]);
+            }
+            
+            preparedStatement.executeUpdate();
+        } finally {
+            closeDataBase(); // Siempre cierra recursos
         }
     }
 
-    protected void consultarDataBase(String sql) throws Exception {
+    protected void consultarDataBase(String sql, Object... params) throws SQLException, ClassNotFoundException {
         try {
             connectDataBase();
-            statement = conexion.createStatement();
-            resultSet = statement.executeQuery(sql);
-        } catch (SQLException | ClassNotFoundException ex) {
-            System.out.println(ex.getMessage());
-            throw ex;
+            preparedStatement = conexion.prepareStatement(sql);
+            
+            for (int i = 0; i < params.length; i++) {
+                preparedStatement.setObject(i + 1, params[i]);
+            }
+            resultSet = preparedStatement.executeQuery();
+        } catch (SQLException | ClassNotFoundException e) {
+            closeDataBase();
+            throw e;
         }
     }
+    
 
 }

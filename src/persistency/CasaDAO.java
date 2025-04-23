@@ -1,6 +1,7 @@
 package persistency;
 
 import entity.Casa;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -10,32 +11,31 @@ public class CasaDAO  extends DAO{
 
     }
     //agregar, eliminar, listar, buscar, modificar
-    public void agregarCasa(Casa casa) throws Exception {
-        try {
-            String sql = "INSERT INTO casa (id_casa, calle, numero, codigo_postal, ciudad, pais, fechaDesde, fechaHasta, tiempoMinimo, tiempoMaximo, precioHabitacion, tipoVivienda) VALUES ("
-                    + casa.getIdCasa() + "', '"
-                    + casa.getCalle() + "', "
-                    + casa.getNumero() + ", '"
-                    + casa.getCodigoPostal() + "', '"
-                    + casa.getCiudad() + "', '"
-                    + casa.getPais() + "', '"
-                    + casa.getFechaDesde() + "', '"
-                    + casa.getFechaHasta() + "', "
-                    + casa.getTiempoMinimo() + ", "
-                    + casa.getTiempoMaximo() + ", "
-                    + casa.getPrecioHabitacion() + ", '"
-                    + casa.getTipoVivienda() + "')";
-            crud(sql);
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
-        }
+    public void agregarCasa(Casa casa)throws SQLException, ClassNotFoundException {
+        String sql = "INSERT INTO casa (id_casa, calle, numero, codigo_postal, ciudad, pais, fecha_Desde, fecha_Hasta, tiempo_Minimo, tiempo_Maximo, precio_Habitacion, tipo_Vivienda) "
+               + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        crud(sql, 
+            casa.getIdCasa(),
+            casa.getCalle(),
+            casa.getNumero(),
+            casa.getCodigoPostal(),
+            casa.getCiudad(),
+            casa.getPais(),
+            casa.getFechaDesde(),
+            casa.getFechaHasta(),
+            casa.getTiempoMinimo(),
+            casa.getTiempoMaximo(),
+            casa.getPrecioHabitacion(),
+            casa.getTipoVivienda()
+        );
     }
-
-    public void listarCasas() throws Exception {
+    public List<Casa> listarCasas() throws SQLException, ClassNotFoundException {
+        String sql = "SELECT * FROM casas";
+        
+        consultarDataBase(sql);
+        List<Casa> casas = new ArrayList<>();
+        
         try {
-            String sql = "SELECT * FROM casas";
-            consultarDataBase(sql);
-            List<Casa> casas = new ArrayList<>();
             while (resultSet.next()) {
                 Casa casa = new Casa();
                 casa.setIdCasa(resultSet.getInt("id_casa"));
@@ -44,38 +44,30 @@ public class CasaDAO  extends DAO{
                 casa.setCodigoPostal(resultSet.getString("codigo_postal"));
                 casa.setCiudad(resultSet.getString("ciudad"));
                 casa.setPais(resultSet.getString("pais"));
-                casa.setFechaDesde(resultSet.getString("fechaDesde"));
-                casa.setFechaHasta(resultSet.getString("fechaHasta"));
-                casa.setTiempoMinimo(resultSet.getInt("tiempoMinimo"));
-                casa.setTiempoMaximo(resultSet.getInt("tiempoMaximo"));
-                casa.setPrecioHabitacion(resultSet.getDouble("precioHabitacion"));
-                casa.setTipoVivienda(resultSet.getString("tipoVivienda"));
+                casa.setFechaDesde(resultSet.getString("fecha_Desde"));
+                casa.setFechaHasta(resultSet.getString("fecha_Hasta"));
+                casa.setTiempoMinimo(resultSet.getInt("tiempo_Minimo"));
+                casa.setTiempoMaximo(resultSet.getInt("tiempo_Maximo"));
+                casa.setPrecioHabitacion(resultSet.getDouble("precio_Habitacion"));
+                casa.setTipoVivienda(resultSet.getString("tipo_Vivienda"));
                 casas.add(casa);
             }
+            return casas;
+        } finally {
             closeDataBase();
-            for (Casa cas : casas) {
-                System.out.println(cas.toString());
-                System.out.println("--------------------");
-            }
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
         }
     }
 
     public void eliminarCasa(int id) throws Exception {
-        try {
-            String sql = "DELETE FROM casa WHERE id_casa = " + id;
-            crud(sql);
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
-        }
+        String sql = "DELETE FROM casa WHERE id_casa = ?";
+        crud(sql, id);
     }
 
-    public void buscarCasa(int id) throws Exception {
+    public Casa buscarCasa(int id)throws SQLException, ClassNotFoundException{
+        String sql = "SELECT * FROM casas WHERE id_casa = ?";
+        consultarDataBase(sql, id);
+        Casa casa = new Casa();
         try {
-            String sql = "SELECT * FROM casa WHERE id_casa = " + id;
-            consultarDataBase(sql);
-            Casa casa = new Casa();
             if(resultSet.next()) {
                 casa.setIdCasa(resultSet.getInt("id_casa"));
                 casa.setCalle(resultSet.getString("calle"));
@@ -83,18 +75,45 @@ public class CasaDAO  extends DAO{
                 casa.setCodigoPostal(resultSet.getString("codigo_postal"));
                 casa.setCiudad(resultSet.getString("ciudad"));
                 casa.setPais(resultSet.getString("pais"));
-                casa.setFechaDesde(resultSet.getString("fechaDesde"));
-                casa.setFechaHasta(resultSet.getString("fechaHasta"));
-                casa.setTiempoMinimo(resultSet.getInt("tiempoMinimo"));
-                casa.setTiempoMaximo(resultSet.getInt("tiempoMaximo"));
-                casa.setPrecioHabitacion(resultSet.getDouble("precioHabitacion"));
-                casa.setTipoVivienda(resultSet.getString("tipoVivienda"));
-                System.out.println(casa.toString());
+                casa.setFechaDesde(resultSet.getString("fecha_Desde"));
+                casa.setFechaHasta(resultSet.getString("fecha_Hasta"));
+                casa.setTiempoMinimo(resultSet.getInt("tiempo_Minimo"));
+                casa.setTiempoMaximo(resultSet.getInt("tiempo_Maximo"));
+                casa.setPrecioHabitacion(resultSet.getDouble("precio_Habitacion"));
+                casa.setTipoVivienda(resultSet.getString("tipo_Vivienda"));
             }
+            return casa;
+        }finally {
             closeDataBase();
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
         }
     }
+
+     public List<Casa> buscarCasasDisponibles(String desde, String hasta, String pais) throws SQLException, ClassNotFoundException {
+        String sql = "SELECT * FROM casa WHERE fechaDesde <= ? AND fechaHasta >= ? AND pais = ?";
+        consultarDataBase(sql, desde, hasta, pais);
+        List<Casa> casas = new ArrayList<>();
+        try {
+            while (resultSet.next()) {
+                Casa casa = new Casa();
+                casa.setIdCasa(resultSet.getInt("id_casa"));
+                casa.setCalle(resultSet.getString("calle"));
+                casa.setNumero(resultSet.getInt("numero"));
+                casa.setCodigoPostal(resultSet.getString("codigo_postal"));
+                casa.setCiudad(resultSet.getString("ciudad"));
+                casa.setPais(resultSet.getString("pais"));
+                casa.setFechaDesde(resultSet.getString("fecha_Desde"));
+                casa.setFechaHasta(resultSet.getString("fecha_Hasta"));
+                casa.setTiempoMinimo(resultSet.getInt("tiempo_Minimo"));
+                casa.setTiempoMaximo(resultSet.getInt("tiempo_Maximo"));
+                casa.setPrecioHabitacion(resultSet.getDouble("precio_Habitacion"));
+                casa.setTipoVivienda(resultSet.getString("tipo_Vivienda"));
+                casas.add(casa);
+            }
+            return casas;
+        } finally {
+            closeDataBase();
+        }
+
+     }
 
 }
