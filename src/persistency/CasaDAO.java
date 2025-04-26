@@ -113,7 +113,6 @@ public class CasaDAO  extends DAO{
         } finally {
             closeDataBase();
         }
-
      }
 
 }
